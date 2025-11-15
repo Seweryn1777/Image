@@ -1,0 +1,44 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'thursday'
+    commit-message:
+      prefix: 'build(prod-dependencies)'
+      prefix-development: 'build(dev-dependencies)'
+    ignore:
+      - dependency-name: '@types/k6'
+    groups:
+      prod-dependencies-minor-and-patch:
+        dependency-type: 'production'
+        update-types:
+          - 'minor'
+          - 'patch'
+      dev-dependencies-minor-and-patch:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
+      prod-dependencies-major:
+        dependency-type: 'production'
+        update-types:
+          - 'major'
+      dev-dependencies-major:
+        dependency-type: 'development'
+        update-types:
+          - 'major'
+
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'thursday'
+    commit-message:
+      prefix: 'build(github-actions)'

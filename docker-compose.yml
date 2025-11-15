@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+  api:
+    container_name: image-service-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - 3000:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      createbuckets:
+        condition: service_completed_successfully
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:17
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: ${TYPEORM_DATABASE}
+      POSTGRES_USER: ${TYPEORM_USERNAME}
+      POSTGRES_PASSWORD: ${TYPEORM_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - app-network
+
+  redis:
+    image: 'redis:alpine'
+    restart: always
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+    environment:
+      ADMINER_DEFAULT_SERVER: postgres
+    networks:
+      - app-network
+
+  # 🔥 MinIO z network alias
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    command: server /data --console-address ":9001"
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin123
+      # 🔥 KLUCZOWE: używamy aliasu 'minio.local'
+      MINIO_SERVER_URL: http://minio.local:9000
+    volumes:
+      - minio_data:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      app-network:
+        aliases:
+          - minio.local  # 🔥 Network alias
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      echo 'Configuring MinIO...';
+      sleep 3;
+      /usr/bin/mc alias set myminio http://minio.local:9000 minioadmin minioadmin123;
+      /usr/bin/mc mb myminio/images --ignore-existing;
+      echo 'Bucket created!';
+      exit 0;
+      "
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+  minio_data:
+
+networks:
+  app-network:
+    driver: bridge
