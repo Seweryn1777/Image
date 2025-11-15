@@ -33,7 +33,7 @@ jobs:
 
       # each workflow has its own isolated environment and they don't share cache with each other, so the key should be unique for the workflow to work properly
       - name: Check if node modules are cached
-        uses: actions/cache@v4.2.3
+        uses: actions/cache@v4.3.0
         with:
           path: ./node_modules
           key: ${{ env.CACHE_KEY }}-node-modules-${{ hashFiles('**/yarn.lock') }}
