@@ -1,15 +1,10 @@
-## Installation
+## Prerequisites
 
-```bash
-$ yarn install
-```
-
-## Minio configuration
-Add MinIO host mapping to `/etc/hosts`:
+1. Add MinIO host mapping to `/etc/hosts`:
 
 **Linux/Mac:**
 ```bash
-sudo echo "127.0.0.1       minio.local" >> /etc/hosts
+echo "127.0.0.1       minio.local" | sudo tee -a /etc/hosts
 ```
 
 **Windows:**
@@ -18,7 +13,7 @@ Open `C:\Windows\System32\drivers\etc\hosts` as Administrator and add:
 127.0.0.1       minio.local
 ```
 
-# Why is this needed?
+### Why is this needed?
 
 MinIO generates pre-signed URLs using the hostname specified in `MINIO_SERVER_URL`. We use `minio.local` as the hostname because:
 
@@ -32,58 +27,57 @@ In production environments with real domain names (e.g., `storage.yourdomain.com
 
 ## Running the app
 
-1. Start docker-compose services (Api, Postgres, Redis, MinIO, Adminer)
+1. Copy environment variables
+
+```bash
+$ cp .env.example .env
+```
+
+2. Start all services (API, Postgres, Redis, MinIO, Adminer)
 
 ```bash
 $ docker-compose up -d
 ```
 
-2. Run the application in development mode
+3. Check if services are running
 
 ```bash
-$ yarn start:dev
+$ docker-compose ps
 ```
 
-**Note:** The application is not included in docker-compose due to issues with MinIO presignedUrl. Run it locally instead.
+The API will be available at `http://localhost:3000`
 
-For other modes:
+To view logs:
 ```bash
-# development
-$ yarn start
-
-# production mode
-$ yarn start:prod
+$ docker-compose logs -f api
 ```
 
-## Building and testing Docker image
-1. Clone repository
-
-2. Build docker image to verify it working
+To stop all services:
 ```bash
-$ docker build -t api-name .
+$ docker-compose down
 ```
 
-3. Run image to test it's working as expected and go to exposed port 8080
-```bash
-$ docker run -p 8080:3000 --env-file .env api-name
-```
+## Accessing services
 
-You can always use curl or browser
-```bash
-$ curl -si http://localhost:8080
-```
+- **API**: http://localhost:3000
+- **Swagger**: http://localhost:3000/swagger (credentials in .env)
+- **MinIO Console**: http://localhost:9001 (minioadmin / minioadmin123)
+- **Adminer**: http://localhost:8080 (PostgreSQL UI)
 
 ## Test
 
 ```bash
+# Run tests inside container
+$ docker-compose exec api yarn test
+
 # unit tests
-$ npm run test
+$ docker-compose exec api yarn test
 
 # e2e tests
-$ npm run test:e2e
+$ docker-compose exec api yarn test:e2e
 
 # test coverage
-$ npm run test:cov
+$ docker-compose exec api yarn test:cov
 ```
 
 ## Env configuration
