@@ -1,20 +1,57 @@
+# .github/workflows/update-nvmrc.yml
 name: Update .nvmrc to latest LTS
 
 on:
+  # every Monday 00:00 UTC
   schedule:
-    - cron: '0 0 * * 1' # runs every Monday at 0:00 
-
+    - cron: '0 0 * * 1'
   workflow_dispatch:
-    
+
 permissions:
   contents: write
   pull-requests: write
+
+# keep just one run at a time
+concurrency:
+  group: update-nvmrc
+  cancel-in-progress: true
 
 jobs:
   update-nvmrc:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+
     steps:
-      - uses: codemask-labs/update-nvmrc-action@v1.3.0
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        id: node
+        uses: actions/setup-node@v4
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          node-version: 'lts/*'
+          check-latest: true
+
+      - name: Write .nvmrc
+        id: write
+        shell: bash
+        run: |
+          echo "${{ steps.node.outputs.node-version }}" > .nvmrc
+          if git diff --quiet .nvmrc; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Pull Request
+        if: steps.write.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: |
+            build(node): update .nvmrc to Node.js ${{ steps.node.outputs.node-version }}
+          branch: update-nvmrc-${{ steps.node.outputs.node-version }}
+          title: >
+            build(node): update .nvmrc to Node.js ${{ steps.node.outputs.node-version }}
+          body: |
+            This PR updates **.nvmrc** to \`${{ steps.node.outputs.node-version }}\`.
+          labels: dependencies
