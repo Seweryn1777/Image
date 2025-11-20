@@ -20,7 +20,7 @@ jobs:
       DOTENV_CONFIG_PATH: .env.test
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v5.0.0
+      - uses: actions/checkout@v5
 
       - name: Export .nvmrc to node version
         id: node-version
