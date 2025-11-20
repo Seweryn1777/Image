@@ -23,7 +23,7 @@ MinIO generates pre-signed URLs using the hostname specified in `MINIO_SERVER_UR
 
 By mapping `minio.local` to `127.0.0.1` on your host machine, both the Docker containers and your browser use the same hostname, ensuring pre-signed URLs work correctly everywhere.
 
-This /etc/hosts modification is only needed for local development with MinIO. In production, we would use actual cloud storage services like Amazon S3, where URLs are handled by the service provider's infrastructure."
+This /etc/hosts modification is only needed for local development with MinIO. In production, we would use actual cloud storage services like Amazon S3, where URLs are handled by the service provider's infrastructure.
 
 ## Running the app
 
