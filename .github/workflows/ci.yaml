@@ -27,7 +27,7 @@ jobs:
         run: echo "version=$(cat .nvmrc | sed 's/v//')" >> $GITHUB_OUTPUT
 
       - name: Use Node.js
-        uses: actions/setup-node@v6.0.0
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ steps.node-version.outputs.version }}
 
