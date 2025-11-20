@@ -32,8 +32,8 @@
     "migration:revert": "ts-node -P ./tsconfig.json -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:revert -d ./src/lib/config/typeorm-migrations.datasource"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.936.0",
-    "@aws-sdk/s3-request-presigner": "3.936.0",
+    "@aws-sdk/client-s3": "3.937.0",
+    "@aws-sdk/s3-request-presigner": "3.937.0",
     "@nestjs/common": "11.1.9",
     "@nestjs/config": "4.0.2",
     "@nestjs/core": "11.1.9",
