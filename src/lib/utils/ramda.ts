@@ -14,11 +14,10 @@ import {
 
 const hasKeys = (subject: any) =>
   typeof subject === 'object' ? Object.keys(subject).length > 0 : false
-const notNil = (subject: any) => !isNil(subject)
 const isDefined = complement(isNil)
 const clearObject = <T = any>(subject: Record<string | number, T>) => {
   const filteredArray = toPairs<any>(subject).filter(
-    ([, value]) => notNil(value) && value !== ''
+    ([, value]) => isDefined(value) && value !== ''
   )
 
   return fromPairs(filteredArray) as Record<string, T>
